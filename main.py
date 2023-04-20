@@ -8,6 +8,8 @@ G = GraphVisualization.GraphVisualization()
 #import k from user's input
 k = int(input("K?"))
 
+bv = int(input("Degree Constraint?"))
+
 #open the output file
 f = open("output.txt","w")
 
@@ -132,3 +134,43 @@ for i in range (Elements_Count):
 
 # Finally visualizing the data using mathplotlib
 G.visualize()
+
+# convert G to stp file
+# note that the node index of stp file starts from 1
+H = nx.Graph()
+H.add_edges_from(G.visual)
+output = open("FatTree{}.stp".format(k), "w+")
+
+with open("workers.txt", "r") as data:
+    workers = [int(line.strip()) + 1 for line in data.readlines()]
+
+output.write("   33D32945 STP File, STP Format Version 1.0\n\n")
+output.write(
+    "   SECTION Comment\n   Name    "Fat Tree"\n   Creator "Ivan Lin"\n   Remark  "A Fat Tree Topology in Data Center"\n   END\n\n"
+)
+
+output.write("   SECTION Graph\n   Nodes {}\n   Edges {}\n".format(H.number_of_nodes(), H.number_of_edges()))
+for edge in H.edges:
+    if (edge[0] in workers) and (edge[1] in workers):
+        output.write("   E {} {} {}\n".format(edge[0] + 1, edge[1] + 1, 2))
+    else:
+        output.write("   E {} {} {}\n".format(edge[0] + 1, edge[1] + 1, 1))
+    
+output.write("   END\n\n")
+
+output.write("   SECTION Terminals\n")
+output.write("   Terminals {}\n".format(len(workers)))
+for worker in workers:
+    output.write("   T {}\n".format(worker))
+output.write("   END\n\n")
+
+output.write("   SECTION MaximumDegrees\n")
+for node in range(0, H.number_of_nodes()):
+    if node in workers:
+        output.write("   MD {} 1\n".format(node+1))
+    else:
+        output.write("   MD {} {}\n".format(node+1, bv))
+output.write("   END\n\n")
+output.write("   EOF")
+
+

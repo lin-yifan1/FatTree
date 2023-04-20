@@ -30,6 +30,4 @@ class GraphVisualization:
         nx.draw_networkx(G)
         plt.show()
 
-    # Driver code
-
 
